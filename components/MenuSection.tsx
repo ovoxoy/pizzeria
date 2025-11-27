@@ -10,7 +10,8 @@ interface MenuSectionProps {
 export const MenuSection: React.FC<MenuSectionProps> = memo(({ category, onAdd }) => {
   return (
     <div id={category.id} className="scroll-mt-32 mb-12">
-      <div className="flex items-center gap-4 mb-6 sticky top-16 bg-brand-bg/95 backdrop-blur py-2 z-10">
+      {/* Sticky header stacks below main Header (56px) and Nav (~70px) -> top-32 (128px) */}
+      <div className="flex items-center gap-4 mb-6 sticky top-32 bg-brand-bg/95 backdrop-blur py-2 z-30">
         <h2 className="text-2xl font-display uppercase font-medium text-brand-dark tracking-wide">
           {category.label}
         </h2>
@@ -24,7 +25,7 @@ export const MenuSection: React.FC<MenuSectionProps> = memo(({ category, onAdd }
            </div>
            <p className="mt-0.5 leading-relaxed">
              Standard Ø 32cm. <br />
-             <strong>Party-Pizza (50x50cm)?</strong> Bitte Anmerkung im Warenkorb nutzen oder anrufen!
+             <strong>Party-Pizza (50x50cm)?</strong> Bitte anrufen!
            </p>
         </div>
       )}

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, ShoppingBasket, MessageCircle, Minus, Plus, Trash2 } from 'lucide-react';
-import { CartItem, OrderDetails } from '../types';
+import { X, ShoppingBasket, MessageCircle, Minus, Plus, Trash2, CreditCard, Banknote } from 'lucide-react';
+import { CartItem, OrderDetails, PaymentMethod } from '../types';
+import { APP_CONFIG, PAYPAL_CONFIG } from '../config';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -10,10 +12,14 @@ interface CartModalProps {
   total: number;
 }
 
-const WHATSAPP_NUMBER = "491736398022";
-
 export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, onUpdateQty, total }) => {
-  const [details, setDetails] = useState<OrderDetails>({ name: '', address: '', note: '' });
+  const [details, setDetails] = useState<OrderDetails>({ 
+    name: '', 
+    address: '', 
+    note: '',
+    paymentMethod: 'cash' // Standard: Barzahlung / WhatsApp
+  });
+  
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
@@ -28,22 +34,45 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, onU
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     
-    let txt = `🍕 *NEUE BESTELLUNG* 🍕\n\n`;
-    txt += `👤 *Name:* ${details.name}\n📍 *Adresse:* ${details.address}\n`;
-    if (details.note) txt += `📝 *Notiz:* ${details.note}\n`;
-    txt += `\n🛒 *BESTELLUNG:*\n`;
+    // Logik-Weiche: Wenn PayPal aktiviert und ausgewählt ist
+    if (PAYPAL_CONFIG.enabled && details.paymentMethod === 'paypal') {
+        // HIER WÜRDE DIE PAYPAL-LOGIK GREIFEN
+        console.log("Initialisiere PayPal Zahlung mit Client ID:", PAYPAL_CONFIG.clientId);
+        alert(`PayPal Integration ist vorbereitet.\nModus: ${PAYPAL_CONFIG.mode}\nClient ID: ${PAYPAL_CONFIG.clientId ? 'Vorhanden' : 'Fehlt'}`);
+        return; 
+    }
+
+    // --- WHATSAPP NACHRICHT GENERIEREN ---
+    
+    let txt = `👋 *Hallo Pizzeria da Massimo!*\n\n`;
+    txt += `Ich möchte gerne bestellen:\n\n`;
+    
+    txt += `🛒 *BESTELLUNG*\n`;
+    txt += `------------------\n`;
     
     let cartTotal = 0;
     cart.forEach(i => {
         const sub = i.price * i.qty;
-        txt += `▫️ ${i.qty}x ${i.name} (${sub.toFixed(2).replace('.',',')}€)\n`;
+        // Format: "2x Pizza Salami (18,00 €)"
+        txt += `${i.qty}x ${i.name} (${sub.toFixed(2).replace('.',',')} €)\n`;
         cartTotal += sub;
     });
     
-    txt += `\n💶 *GESAMT: ${cartTotal.toFixed(2).replace('.',',')} €*\n`;
-    txt += `--------------------------------`;
+    txt += `------------------\n`;
+    txt += `💶 *GESAMT: ${cartTotal.toFixed(2).replace('.',',')} €*\n\n`;
+    
+    txt += `👤 *MEINE DATEN*\n`;
+    txt += `Name: ${details.name}\n`;
+    txt += `Adresse: ${details.address}\n`;
+    
+    if (details.note) {
+        txt += `📝 Notiz: ${details.note}\n`;
+    }
+    
+    txt += `💰 Zahlung: ${details.paymentMethod === 'paypal' ? 'PayPal (Online)' : 'Barzahlung'}\n\n`;
+    txt += `Vielen Dank! 🍕`;
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`;
+    const url = `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(txt)}`;
     window.open(url, '_blank');
   };
 
@@ -121,7 +150,8 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, onU
             <span className="text-2xl font-bold text-brand-dark font-display">{total.toFixed(2).replace('.', ',')} €</span>
           </div>
 
-          <form onSubmit={handleCheckout} className="space-y-3">
+          <form onSubmit={handleCheckout} className="space-y-4">
+            {/* Input Fields */}
             <div className="grid grid-cols-1 gap-3">
               <input 
                 required
@@ -156,17 +186,54 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, onU
                 onChange={e => setDetails({...details, note: e.target.value})}
               />
             </div>
+
+            {/* --- PAYMENT METHOD SELECTION --- */}
+            {PAYPAL_CONFIG.enabled && (
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <div 
+                  onClick={() => setDetails({...details, paymentMethod: 'cash'})}
+                  className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${details.paymentMethod === 'cash' ? 'border-brand-green bg-green-50 text-brand-green' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <Banknote size={24} />
+                  <span className="text-xs font-semibold">Barzahlung</span>
+                </div>
+                <div 
+                  onClick={() => setDetails({...details, paymentMethod: 'paypal'})}
+                  className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${details.paymentMethod === 'paypal' ? 'border-[#0070ba] bg-blue-50 text-[#0070ba]' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <CreditCard size={24} />
+                  <span className="text-xs font-semibold">PayPal</span>
+                </div>
+              </div>
+            )}
             
+            {/* Submit Button */}
             <button 
               type="submit" 
               disabled={cart.length === 0}
-              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-green-600/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none mt-4"
+              className={`w-full font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none mt-2
+                ${details.paymentMethod === 'paypal' && PAYPAL_CONFIG.enabled 
+                  ? 'bg-[#0070ba] hover:bg-[#003087] text-white shadow-blue-600/20' 
+                  : 'bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-green-600/20'
+                }`}
             >
-              <MessageCircle className="fill-white" size={24} />
-              Bestellung via WhatsApp
+              {details.paymentMethod === 'paypal' && PAYPAL_CONFIG.enabled ? (
+                <>
+                  <CreditCard className="fill-white/20" size={24} />
+                  Jetzt bezahlen
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="fill-white" size={24} />
+                  Bestellung via WhatsApp
+                </>
+              )}
             </button>
+            
             <p className="text-[11px] text-center text-gray-400 leading-tight">
-              Mit dem Klick öffnet sich WhatsApp mit deiner vorausgefüllten Bestellung.
+              {details.paymentMethod === 'paypal' && PAYPAL_CONFIG.enabled 
+                ? 'Sie werden zur sicheren Zahlung an PayPal weitergeleitet.' 
+                : 'Mit dem Klick öffnet sich WhatsApp mit deiner vorausgefüllten Bestellung.'}
             </p>
           </form>
         </div>

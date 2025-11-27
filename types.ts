@@ -16,8 +16,11 @@ export interface Category {
   items: MenuItem[];
 }
 
+export type PaymentMethod = 'cash' | 'paypal';
+
 export interface OrderDetails {
   name: string;
   address: string;
   note: string;
+  paymentMethod: PaymentMethod;
 }

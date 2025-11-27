@@ -55,7 +55,7 @@ export const MENU_DATA: Category[] = [
   },
   {
     id: 'speciali',
-    label: 'Speciali',
+    label: 'Pizza Speciali',
     items: [
       { id: 's1', name: 'Primavera', description: 'Schinken, Sahne, Mais (Party: 21,50 €)', price: 10.50, category: 'speciali' },
       { id: 's2', name: 'Vesuvio', description: 'Schinken, Pilze (Party: 21,50 €)', price: 10.50, category: 'speciali' },
