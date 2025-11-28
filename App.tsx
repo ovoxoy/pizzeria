@@ -10,6 +10,8 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { WelcomeSection } from './components/WelcomeSection';
 
+const heroImage = `${import.meta.env.BASE_URL}titelbild.png`;
+
 const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -88,7 +90,7 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 z-10" />
         
         <img 
-          src="/titelbild.png" 
+          src={heroImage} 
           alt="Pizzeria da Massimo" 
           className="absolute inset-0 w-full h-full object-cover scale-105"
           fetchPriority="high"
