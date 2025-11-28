@@ -86,6 +86,7 @@ const App: React.FC = () => {
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-white text-center px-4 overflow-hidden bg-brand-dark">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 z-10" />
+        
         <img 
           src="/titelbild.png" 
           alt="Pizzeria da Massimo" 
